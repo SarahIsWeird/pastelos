@@ -1,0 +1,36 @@
+TARGET := i686-elf
+TARGET_NAME := my_program
+CC := $(TARGET)-gcc
+AS := nasm
+LD := $(TARGET)-gcc
+
+C_FLAGS := -ffreestanding -Wall -Wextra -c -O2
+AS_FLAGS := -felf32
+LD_FLAGS := -ffreestanding -T ../linker.ld -nostdlib -lgcc
+
+SRC_DIR := src
+BUILD_DIR := build
+
+C_SOURCES := $(shell find $(SRC_DIR) -name '*.c')
+ASM_SOURCES := $(shell find $(SRC_DIR) -name '*.asm')
+
+C_OBJECTS := $(patsubst %.c,%.c.o,$(subst $(SRC_DIR)/,$(BUILD_DIR)/,$(C_SOURCES)))
+ASM_OBJECTS := $(patsubst %.asm,%.asm.o,$(subst $(SRC_DIR)/,$(BUILD_DIR)/,$(ASM_SOURCES)))
+
+.PHONY: clean
+
+all: build
+
+$(C_OBJECTS): build/%.c.o: src/%.c
+	@mkdir -p $(dir $@)
+	$(CC) -o $@ $< $(C_FLAGS)
+
+$(ASM_OBJECTS): build/%.asm.o: src/%.asm
+	@mkdir -p $(dir $@)
+	$(AS) -o $@ $< $(AS_FLAGS)
+
+build: $(C_OBJECTS) $(ASM_OBJECTS)
+	$(LD) -o $(TARGET_NAME).bin $(C_OBJECTS) $(ASM_OBJECTS) $(LD_FLAGS)
+
+clean:
+	rm -r build/ $(TARGET_NAME).bin 2> /dev/null || true

@@ -1,0 +1,12 @@
+section .data
+color: db 0xf0
+ascii: db 'a'
+
+section .text
+global _start
+_start:
+    mov bl, 'a'
+    mov bh, 0xf0
+    mov eax, 0
+    int 0x69
+    jmp $
