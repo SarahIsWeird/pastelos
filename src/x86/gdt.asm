@@ -26,8 +26,8 @@ set_gdtr:
 global set_tr
 set_tr:
     mov eax, dword [esp + 4]
-    mov dword [eax + 0x4], esp     ; kernel stack
-    mov dword [eax + 0x8], 0x10    ; kernel ss
+    mov dword [eax + 0x4], 0    ; kernel stack
+    mov dword [eax + 0x8], 0x10 ; kernel ss
     mov eax, dword [esp + 8]
     ltr ax
     ret

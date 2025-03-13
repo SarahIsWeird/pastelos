@@ -6,6 +6,7 @@
 #include "../timer/devices/pit.h"
 #include "../timer/timer.h"
 #include "../x86/gdt.h"
+#include "../syscall/syscall.h"
 
 #define PIC1_CMD  0x20
 #define PIC1_DATA 0x21
@@ -62,7 +63,6 @@ static int_ctx_t *handle_irq(int_ctx_t *ctx) {
     if (timer_get_type() == TIMER_PIT && irq == 0) {
         timer_tick();
         ctx = proc_schedule(ctx);
-        gdt_set_kernel_stack(ctx + 1);
     } else {
         vga_printf("IRQ %d\n", irq);
     }
@@ -109,12 +109,7 @@ int_ctx_t *handle_interrupt(int_ctx_t *ctx) {
     if (ctx->int_nr < 0x30) {
         return handle_irq(ctx);
     } else if (ctx->int_nr == 0x69) {
-        switch (ctx->eax) {
-        case 0:
-            vga_set_color(ctx->ebx >> 8);
-            vga_putc(ctx->ebx & 0xff);
-            vga_set_color(0x0f);
-        }
+        return syscall_handle(ctx);
     } else {
         vga_printf("Interrupt 0x%2x\n", ctx->int_nr);
     }

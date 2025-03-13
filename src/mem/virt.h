@@ -13,29 +13,26 @@
 #define P_ACCESSED      0x20
 #define PT_DIRTY        0x40
 
-struct vmm_ctx_t {
-    uint32_t *page_dir;
-    uint32_t *page_dir_phys;
-    // things like swap stuff go here
-};
-
 typedef struct vmm_ctx_t vmm_ctx_t;
 
 void virt_init(mb_info_t *mb_info);
-vmm_ctx_t *virt_get_kernel_ctx(); // TODO: remove this
+vmm_ctx_t *virt_new_ctx();
+void virt_destroy_ctx(vmm_ctx_t *ctx, int is_current_ctx);
 
-vmm_ctx_t *virt_new_pd();
-void virt_enable_ctx(vmm_ctx_t *ctx);
-// void virt_map(vmm_ctx_t *ctx, void *vaddr, void *paddr, uint32_t flags);
-void virt_map_user(vmm_ctx_t *ctx, void *phys, void *virt, uint32_t size, uint32_t flags);
+void virt_unsafe_identity_map(void *addr);
+void *virt_temp_map(void *phys);
+void virt_remove_temp_map(void *virt);
 
-void virt_map_in_curr(void *phys, void *virt, uint32_t flags);
+void virt_use(vmm_ctx_t *ctx);
+
+void virt_mmap_kernel(void *phys, void *virt, uint32_t size);
 
 void *virt_alloc(vmm_ctx_t *ctx);
-void *virt_alloc_at(vmm_ctx_t *ctx, void *virt, uint32_t flags);
-void *virt_alloc_range(vmm_ctx_t *ctx, uint32_t size);
-
+void *virt_alloc_at(vmm_ctx_t *ctx, void *virt);
 void *virt_alloc_kernel();
-void *virt_alloc_range_kernel(uint32_t size);
+void *virt_alloc_at_kernel(void *virt);
+
+void virt_free(vmm_ctx_t *ctx, void *virt);
+void virt_free_kernel(void *virt);
 
 #endif

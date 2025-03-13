@@ -85,7 +85,11 @@ idt:
     idt_int 31
 %assign i 32
 %rep 256 - 32
+%if i == 0x69
     idt_syscall i
+%else
+    idt_int i
+%endif
 %assign i i+1
 %endrep
 IDT_SIZE equ $ - idt

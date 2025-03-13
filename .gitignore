@@ -1,0 +1,4 @@
+**/build/
+**/dbg_build/
+*.bin
+*.iso

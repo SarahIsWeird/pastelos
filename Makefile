@@ -1,4 +1,4 @@
-TARGET := ~/opt/cross/bin/i686-elf
+TARGET := i686-elf
 TARGET_NAME := pastel
 
 CC := $(TARGET)-gcc
@@ -10,7 +10,10 @@ AS_FLAGS := -felf32
 LD_FLAGS := -ffreestanding -T linker.ld -nostdlib -lgcc
 QEMU_FLAGS := -m 100M -net none $(QEMU_FLAGS)
 
-REL_C_FLAGS := $(C_FLAGS) -O2
+# -Wno-array-bounds: virt.c indexes into a uint32_t*,
+# but GCC thinks that means it's a uint32_t[1].
+# Only happens on -O2 because of optimizations.
+REL_C_FLAGS := $(C_FLAGS) -O2 -Wno-array-bounds
 REL_AS_FLAGS := $(AS_FLAGS)
 REL_LD_FLAGS := $(LD_FLAGS) -O2
 REL_QEMU_FLAGS := $(QEMU_FLAGS)

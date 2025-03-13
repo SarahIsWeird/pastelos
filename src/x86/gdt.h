@@ -3,5 +3,6 @@
 
 void gdt_load();
 void gdt_set_kernel_stack(void *stack);
+void gdt_print();
 
 #endif

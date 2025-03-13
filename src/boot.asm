@@ -12,35 +12,34 @@ section .multiboot
     dd MB_CHECKSUM
 
 section .bss
-stack_bottom:
-    resb 16384
+stack_bottom:   resb 16384
 stack_top:
 
 global init_pd
 align 4096
-init_pd:
-    resb 4096
+init_pd:        resb 4096
 
 global init_pt
 align 4096
-init_pt:
-    resb 4096
+init_pt:        resb 4096
 
 ; pain and suffering.
 global mb_info_pt
 align 4096
-mb_info_pt:
-    resb 4096
+mb_info_pt:     resb 4096
+
 
 section .data
-mb_info:
-    dd 0
-mb_checksum:
-    dd 0
+mb_info:        dd 0
+mb_checksum:    dd 0
+global kernel_start
+kernel_start:   dd 0
+global kernel_end
+kernel_end:     dd 0
 
 section .entry
-extern kernel_start
-extern kernel_end
+extern _kernel_start
+extern _kernel_end
 extern mb_start
 extern rw_start
 
@@ -65,7 +64,7 @@ _start:
     mov dword [eax], edx
     add eax, 4
     add ebx, 4096
-    cmp ebx, kernel_end - VIRT_OFFSET
+    cmp ebx, _kernel_end - VIRT_OFFSET
     jl .map_high
 
     ; map the vga mem onto itself. luckily, it fits into one page :)
@@ -121,6 +120,9 @@ _start:
     mov eax, cr0
     or eax, 0x80010000 ; PG = 1, WP = 1
     mov cr0, eax
+
+    mov dword [kernel_start], _kernel_start + VIRT_OFFSET
+    mov dword [kernel_end], _kernel_end + VIRT_OFFSET
 
     mov eax, dword [mb_checksum - VIRT_OFFSET]
     mov ebx, dword [mb_info - VIRT_OFFSET]

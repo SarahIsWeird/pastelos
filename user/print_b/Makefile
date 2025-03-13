@@ -1,10 +1,10 @@
-TARGET := ~/opt/cross/bin/i686-elf
+TARGET := i686-elf
 TARGET_NAME := print_b
 CC := $(TARGET)-gcc
 AS := nasm
 LD := $(TARGET)-gcc
 
-C_FLAGS := -ffreestanding -Wall -Wextra -c -O2
+C_FLAGS := -ffreestanding -Wall -Wextra -c -O0
 AS_FLAGS := -felf32
 LD_FLAGS := -ffreestanding -T ../linker.ld -nostdlib -lgcc
 

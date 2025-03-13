@@ -2,6 +2,8 @@
 
 #include <stdint.h>
 
+#include "../io/vga.h"
+
 #define GDT_SIZE 6
 
 #define ACC_PRESENT     0x80
@@ -29,7 +31,7 @@ typedef struct __attribute__((packed)) gdt_entry {
 } gdt_entry;
 
 static gdt_entry gdt[GDT_SIZE];
-static uint32_t tss[32] = {};
+static uint32_t tss[32] = { 0 };
 
 extern void set_gdtr(gdt_entry *gdt, uint16_t size);
 extern void set_tr(uint32_t *tss, uint16_t selector);
@@ -63,4 +65,13 @@ void gdt_load() {
 
 void gdt_set_kernel_stack(void *stack) {
     tss[1] = (uint32_t) stack;
+}
+
+void gdt_print() {
+    for (int i = 0; i < GDT_SIZE; i++) {
+        gdt_entry entry = gdt[i];
+        vga_printf("%d: %2x%6x %x%4x %2x %x\n", i, entry.base2, entry.base, entry.limit2, entry.limit, entry.access, entry.flags);
+    }
+
+    vga_printf("gdt address: %p\n", gdt);
 }

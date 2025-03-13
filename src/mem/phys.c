@@ -4,8 +4,8 @@
 #include "../misc.h"
 #include "virt.h"
 
-extern void kernel_start;
-extern void kernel_end;
+extern void *kernel_start;
+extern void *kernel_end;
 
 extern void phys_acquire_lock();
 extern void phys_release_lock();
@@ -115,7 +115,7 @@ void phys_init(const mb_info_t *mb_info) {
 
         if (limit > 0xffffffffll) {
             vga_printf("Skipping entry pointing to memory over 4GiB\n");
-        } else {
+        } else if (base != 0ll) {
             set_range_avail(base, limit, type == AR_AVAILABLE);
         }
 
@@ -127,16 +127,16 @@ void phys_init(const mb_info_t *mb_info) {
 
     // Make sure page 0 is unavailable, just to make sure NULL doesn't cause weird things
     set_page_avail(0, 0);
-    set_range_avail(align_to_page((uint32_t) &kernel_start - 0xc0000000, 1),
-                    align_to_page((uint32_t) &kernel_end - 0xc0000000, 0),
+    set_range_avail(align_to_page((uint32_t) kernel_start - 0xc0000000, 1),
+                    align_to_page((uint32_t) kernel_end - 0xc0000000, 0),
                     0);
 
     if (mb_info->flags.mods && mb_info->mods.count > 0) {
         mod_t *modules = mb_info->mods.addr;
         set_page_avail((uint32_t) modules, 0);
-        virt_map_in_curr(modules, modules, 3);
+        virt_unsafe_identity_map(modules);
 
-        for (int i = 0; i < mb_info->mods.count; i++) {
+        for (uint32_t i = 0; i < mb_info->mods.count; i++) {
             mod_t *module = &modules[i];
             set_range_avail((uint32_t) module->start, (uint32_t) module->end, 0);
         }
@@ -187,13 +187,14 @@ void *phys_alloc_range(uint32_t size) {
     }
 
     if (!found) return NULL;
+    if (addr > 0xffffffff) return NULL;
 
     set_range_avail(addr, end, 0);
 
     lock = 0;
 
     // vga_printf("avail: %d KiB\n", usable_pages * PAGE_SIZE / 1024);
-    return (void *) addr;
+    return (void *) (uint32_t) addr;
 }
 
 void phys_free(void *ptr) {
